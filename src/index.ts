@@ -9,7 +9,7 @@ import {
   parse as parseImports,
 } from 'es-module-lexer'
 import { parse as parseAst } from 'acorn'
-import fastGlob from 'fast-glob'
+import { globSync } from 'tinyglobby'
 import MagicString from 'magic-string'
 import { DEFAULT_EXTENSIONS } from 'vite-plugin-utils/constant'
 import {
@@ -373,8 +373,10 @@ async function globFiles({
       return [g + ext, `${g}/index${ext}`]
     }).flat()
 
-  files = fastGlob
-    .sync(fileGlobs, { cwd: /* 🚧-① */path.dirname(importer) })
+  files = globSync(fileGlobs, { cwd: /* 🚧-① */path.dirname(importer) })
+    // Preserve file-before-directory-index precedence when both map to the
+    // same extensionless import. tinyglobby walks directories depth-first.
+    .sort((a, b) => a.split('/').length - b.split('/').length || (a < b ? -1 : a > b ? 1 : 0))
     .map(file => relativeify(file))
 
   return { files, resolved }

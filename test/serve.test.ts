@@ -12,7 +12,7 @@ import {
   it,
 } from 'vitest'
 import fetch from 'node-fetch'
-import fastGlob from 'fast-glob'
+import { globSync } from 'tinyglobby'
 
 const root = path.join(__dirname, 'fixtures')
 let server: ViteDevServer | null = null
@@ -28,7 +28,7 @@ beforeAll(async () => {
 
 describe('vite serve', async () => {
   it('__snapshots__', async () => {
-    const files = fastGlob.sync('__snapshots__/**/*', { cwd: root })
+    const files = globSync('__snapshots__/**/*', { cwd: root })
     for (const file of files) {
       const response = await (await fetch(`http://localhost:${port}/${file.replace('__snapshots__', 'src')}`)).text()
       const distFile = fs.readFileSync(path.join(root, file.replace('__snapshots__', 'dist')), 'utf8')
